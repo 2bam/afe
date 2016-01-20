@@ -65,12 +65,25 @@ for i in range(0, config.names_lines):
 
 
 
+
+#test
+sprite = None
+try:
+    animation = pyglet.image.load_animation('assets/roboarcade2.gif')
+    bin = pyglet.image.atlas.TextureBin()
+    animation.add_to_texture_bin(bin)
+    sprite = pyglet.sprite.Sprite(animation)
+    sprite.scale = 3
+except:
+    pass
+
 @window.event
 def on_draw():
     window.clear()
     background.blit(0, 0, 0, window.width, window.height)
     ratio_blit(example, config.preview_pos, config.preview_size)
     for label in labels: label.draw()
+    if sprite: sprite.draw()
 
 
 pyglet.app.run()
