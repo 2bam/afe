@@ -1,0 +1,12 @@
+Se configura en machine_config.py todo lo que depende de cada maquina
+config.py es para la interfaz
+
+Borrar una carpeta del update_folder no elimina el juego
+PERO si la carpeta existe y no está vacia: hace tanto upgrades como downgrades usando la version ultima encontrada
+
+En update_folder la carpeta del juego NO DEBE CAMBIAR DE NOMBRE NUNCA! o se rompe todo
+
+update.py actualiza los juegos
+afe.py es el front end (Argentron Front End)
+
+

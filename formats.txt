@@ -1,0 +1,29 @@
+shelf dictionary
+
+key = game folder
+value = dict
+    version = checked
+
+deployment pattern:
+
+
+/update_folder
+    /<game name>
+        /<anything>_<version in 1.2.3... format>.zip        <- remember the underscore! important! only supports .zip
+        /bla_1.2.zip
+        /bla_1.2.1.zip     <- newest
+
+
+
+la carpeta en game_folder (el zip descomprimido) debe tener
+/games_folder
+    /<game name>
+        /info.xml
+        /thumb.[jpg|png]
+
+info.xml debe tener el siguiente arbol de datos
++info                   (root)
+    +fullname           nombre completo del juego
+    +description        descripcion, acepta tags html (ver config.py, allowed_html_tags)
+    +controls           texto explicando los controles
+    +execute            el comando para ejecutar el juego

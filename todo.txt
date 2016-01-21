@@ -1,0 +1,5 @@
+[ ] check for input activity (for stats)
+[ ] kill_proc() if inactive for config.XXXX minutes
+[x] run apps
+[ ] temporary (local) filter lists for events that showcase new games. automatic "unlocking" of all games again by date.
+[ ] maybe if setup.py is found in .zip/game_folder, call with argument [install|upgrade|downgrade|remove] accordingly
