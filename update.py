@@ -21,13 +21,13 @@ supported_ext = ['.zip']
 for subdir, dirs, _ in os.walk(mconf.update_folder):
     for game_name in dirs:
 
-        print('\nProcesando: ' + game_name)
+        print(_('\nProcesando: {game})').format(game=game_name))
         dir = os.path.join(subdir, game_name)
 
         files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) and os.path.splitext(f)[1] in supported_ext]
 
         if not files:
-            print('Directorio vacio para juego: '+game_name)
+            print(_('Directorio vacio para juego {game}: ').format(game=game_name))
         else:
             #extract version numbers and fill game_list with (version-list, fullpath) tuple
             game_list = []
@@ -42,9 +42,9 @@ for subdir, dirs, _ in os.walk(mconf.update_folder):
                 game_list.append({'version': normalize_ver_string(file_ver), 'path': os.path.normpath(os.path.join(dir, f))})
 
             #sort by version-list
-            game_list.sort(key=lambda x: x['version'],reverse=True)
+            game_list.sort(key=lambda x: x['version'], reverse=True)
 
-            print('Ultima version encontrada: ' + str(game_list[0]['version']))
+            print(_('Ultima version encontrada: {version!s}').format(game_list[0]['version']))
 
             try:
                 target_dir = os.path.normpath(os.path.join(mconf.games_folder, game_name))
@@ -74,7 +74,7 @@ for subdir, dirs, _ in os.walk(mconf.update_folder):
 
                 data[game_name]['version'] = game_list[0]['version']
             except:
-                print('No se pudo descomprimir ' + game_list[0]['path'] + ' correctamente')
+                print(_('No se pudo descomprimir {path} correctamente').format(path=game_list[0]['path']))
                 print(sys.exc_info()[0])
 
 

@@ -10,3 +10,6 @@ update.py actualiza los juegos
 afe.py es el front end (Argentron Front End)
 
 
+install python 3
+then "run pip install pyglet"
+ran by calling "setup.py"

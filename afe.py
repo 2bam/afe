@@ -18,14 +18,17 @@ def load_game_info(game_name):
     if not 'thumb' in info:
         info['thumb'] = config.thumb['default_path']
 
-    #defaults por las dudas
+    # 'name' is the codename/directory name
+    info['name'] = game_name
+
+    # defaults just in case...
     info['fullname'] = game_name
     for key, value in config.info_defaults.items():
         info[key] = value
 
     info_path = os.path.normpath(os.path.join(dir, config.info_filename))
     if os.path.exists(info_path) and os.path.isfile(info_path):
-        #try:
+        try:
             xroot = ElementTree.parse(info_path).getroot()
 
             for key in ('fullname', *config.info_defaults.keys()):
@@ -37,23 +40,23 @@ def load_game_info(game_name):
                             info[key] += str(ElementTree.tostring(sub))
                         else:
                             info[key] += '' or sub.tail
-        #except:
-        #    print('Error cargando "' + info_path + '", usando valores estandar')
+        except:
+            print('Error cargando "' + info_path + '", usando valores estandar')
 
     return info
 
 game_infos = []
 for root, dirs, files in os.walk(mconf.games_folder):
     for game_name in sorted(list(dirs)):
-        game_infos.append({'name':game_name, 'info':load_game_info(game_name)})
+        game_infos.append(load_game_info(game_name))
 
 import gui
 
 gui.game_infos = game_infos
-gui.refresh_labels(game_infos)
+gui.refresh()
 
 #test
-#os.popen(game_infos[0]['info']['execute'])
+#os.popen(game_infos[0]['execute'])
 
 
 pyglet.app.run()
