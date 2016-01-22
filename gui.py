@@ -1,13 +1,16 @@
 import pyglet
 import config
+from config import _
 import subprocess
 from pyglet.window import key
 import os
 import machine_config as mconf
+import sys
+import shlex        # for Popen args
 
 game_infos = None
 
-window = pyglet.window.Window(**mconf.window_size, fullscreen=mconf.fullscreen, style=pyglet.window.Window.WINDOW_STYLE_BORDERLESS)
+window = pyglet.window.Window(**mconf.window_size, style=pyglet.window.Window.WINDOW_STYLE_BORDERLESS if mconf.faux_fullscreen else pyglet.window.Window.WINDOW_STYLE_DEFAULT)
 
 # label = pyglet.text.Label('Hello, world',
 #                           font_name='Times New Roman',
@@ -32,6 +35,7 @@ def reloc(pos):
 
 label_description = pyglet.text.HTMLLabel('Descripcion <b>soporta <i>HTML</i></b><br />'
                                           , multiline = True
+                                          , x = mul_ratio(reloc((46,46)))[0]
                                           , y = mul_ratio(reloc((46,46)))[1]
                                           , width=580*ratio[0]
                                           , height=340*ratio[1]
@@ -50,23 +54,36 @@ def ratio_blit(image, pos, size):
     image.blit(rpos[0], rpos[1] - size[1]*ratio[1], 0, *mul_ratio(size))
 
 
-def on_joyaxis_motion(joystick, axis, value):
-    if abs(value) > config.joy_analog_treshold:
-        print('motion' + str(joystick) + '  ' + str(axis) + '  ' + str(value))
+def on_joy_input(joystick):
+    #print('Joy input! ' + str(joystick))}
+    #Works
+    pass
+
+#def on_joyaxis_motion(joystick, axis, value):
+#    if abs(value) > config.joy_analog_treshold:
+#        print('motion' + str(joystick) + '  ' + str(axis) + '  ' + str(value))
 
 
-#TODO: joysticks will be needed for activity when lost focus due to game running...
-# joysticks = pyglet.input.get_joysticks()
-# print(joysticks)
-# if not joysticks:
-#     print('No se detectaron joysticks!')
-# else:
-#     for idx, joy in joysticks:
-#         print('Joystick detectado #'+str(idx)+': ' + str(joy.device))
-#
-#         joy.on_joyaxis_motion = on_joyaxis_motion
-#         joy.open()
+#TODO: joysticks will be needed for activity when lost focus due to game running, and to start the watchdog on exit button press...
+joysticks = pyglet.input.get_joysticks()
+print(joysticks)
+if not joysticks:
+    print(_('No se detectaron joysticks!'))
+else:
+    for idx, joy in enumerate(joysticks):
+        print(_('Joystick detectado #')+str(idx)+': ' + str(joy.device))
 
+        #joy.on_joyaxis_motion = on_joyaxis_motion
+
+        #Send everything to the same handler (except motion that has a threshold)
+        def on_motion(joystick, axis, value):
+             if abs(value) > config.joy_analog_treshold:
+                 on_joy_input(joystick)
+        joy.on_joyaxis_motion = on_motion
+        joy.on_joybutton_press = lambda joystick, button: on_joy_input(joystick)
+        joy.on_joybutton_release = lambda joystick, button: on_joy_input(joystick)
+        joy.on_joyhat_motion = lambda joystick, hat_x, hat_y: on_joy_input(joystick)
+        joy.open()
 
 preview_image = pyglet.resource.image('assets/test/example_preview.png')
 
@@ -89,7 +106,7 @@ for i in range(0, config.names_lines):
 
 def refresh_labels(game_infos):
     for i in range(0, config.names_lines):
-        labels[i].text = '¡NO HAY JUEGOS' if not game_infos else game_infos[(selected - config.names_lines // 2 + i) % len(game_infos)]['fullname']
+        labels[i].text = _('¡NO HAY JUEGOS!') if not game_infos else game_infos[(selected - config.names_lines // 2 + i) % len(game_infos)]['fullname']
 
 
 
@@ -112,22 +129,49 @@ def kill_proc():
     gui.process.terminate()
     window.activate()
 
+def draw_with_precarious_shadow(label, offset):
+    #too slow!
+    # col = label.color
+    # label.color = (0,0,0,255)
+    # label.x -= offset
+    # label.y -= offset
+    # label.draw()
+    # label.color = col
+    # label.x += offset
+    # label.y += offset
+    label.draw()
+
 @window.event
 def on_draw():
     window.clear()
     background.blit(0, 0, 0, window.width, window.height)
     ratio_blit(preview_image, config.preview_pos, config.preview_size)
-    for label in labels: label.draw()
+    for label in labels:
+        draw_with_precarious_shadow(label, 4)
     if sprite: sprite.draw()
-    label_description.draw()
+    draw_with_precarious_shadow(label_description, 1)
 
 
-import gui      #FIXME: this is weird, having to import our own module to access in a function... I'm not that Python savvy
+import gui      #FIXME: this is weird, having to import our own module to access in a function... I'm not that Python savvy. Investigate.
 
 def refresh():
     refresh_labels(game_infos)
-    gui.preview_image = pyglet.image.load(game_infos[selected]['thumb'])
-    #gui.label_description.text = game_infos[selected]['description']
+    if len(game_infos) > 0:
+        sel_game = game_infos[selected]
+        gui.preview_image = pyglet.image.load(sel_game['thumb'])
+        gui.label_description.text = '''
+                                     <h1>{info[fullname]} ({info[developer]}, {info[year]})</h1>
+                                     {info[description]}
+                                     <br />
+                                     <h3>Controles</h3>
+                                     {info[controls]}
+                                     <u>{info[website]}</u>'''.format(info=sel_game)
+        gui.label_description.color = (255,255,255,255)
+
+def do_checks(dt):
+    if gui.process and gui.process.poll() is not None:
+        print(_("El proceso se termino a si mismo. Exit code: ") + str(process.poll()))
+        gui.process = None
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -138,7 +182,8 @@ def on_key_press(symbol, modifiers):
         gui.selected = (gui.selected + 1) % len(game_infos)
         refresh()
     elif symbol == key.F and (modifiers&key.MOD_ALT) != 0:
-        window.set_fullscreen(not window.fullscreen, **mconf.window_size)
+        #window.set_fullscreen(not window.fullscreen, **mconf.window_size)
+        pass
     elif symbol == key.ESCAPE:
         kill_proc()
         raise SystemExit()
@@ -147,20 +192,25 @@ def on_key_press(symbol, modifiers):
         exec = game_infos[selected]['execute']
         if exec:
             exec_dir = os.path.join(mconf.games_folder, game_infos[selected]['name'])
-            exec_path = os.path.normpath(os.path.join(exec_dir, exec))
-            print('Executing ' + exec_path)
+            print(_('Ejecutando [{exe}] con CWD=[{cwd}]').format(exe=exec, cwd=exec_dir))
+            exec_list = shlex.split(exec, posix=True)
+            exec_list[0] = os.path.join(exec_dir, exec_list[0])
+            print(exec_list)
             try:
-                #Windows hack: Give focus to window
+                #Windows hack: Give focus to window TODO: is this still needed?
                 si = subprocess.STARTUPINFO()
                 si.dwFlags = subprocess.STARTF_USESHOWWINDOW
                 SW_SHOW = 5
                 si.wShowWindow = SW_SHOW
 
-                gui.process = subprocess.Popen(game_infos[selected]['execute'], cwd=exec_dir, startupinfo=si)
-                #gui.process = subprocess.Popen(game_infos[selected]['execute'], cwd=exec_dir)
-                print("OK")
+                gui.process = subprocess.Popen(exec_list, cwd=exec_dir, startupinfo=si)
+                # gui.process = subprocess.Popen(exec_path, cwd=exec_dir)
+                print(_('OK'))
             except:
+                print(_('ERROR AL EJECUTAR: ') + str(sys.exc_info()[0]))
                 gui.process = None
 
-
     print('A key was pressed sym=' + key.symbol_string(symbol) + ' mod=' + key.modifiers_string(modifiers))
+
+
+pyglet.clock.schedule_interval(do_checks, 1.0)

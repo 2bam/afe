@@ -11,12 +11,15 @@ thumb = {
         ,'default_path'     : 'assets/test/example_preview.png'
         }
 
-allowed_html_tags = ['b','i']
+allowed_html_tags = ['b', 'i', 'sub', 'sup']
 
 info_filename = 'info.xml'
 
 info_defaults = {
      'description'  : ''
+    ,'developer'    : ''
+    ,'website'      : ''
+    ,'year'         : '20XX'
     ,'controls'     : 'No especificado'
     ,'execute'      : ''
 }

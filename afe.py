@@ -5,16 +5,33 @@ import os
 import xml.etree.ElementTree as ElementTree
 import pyglet
 
+print('''
+    *************************************************
+    Arrancando Argentron Front End v{app_version}
+    Creado por Martin Sebastian Wain
+
+    Maquina     {machine[name]}
+    Codigo      {machine[code]}
+    Ubicacion   {machine[location]}
+    *************************************************
+    '''.format(app_version=config.app_version, machine=mconf.machine))
+
+try:
+    os.makedirs(mconf.games_folder)
+except:
+    pass
+
 def load_game_info(game_name):
     info = {}
 
     #find screenshot
     dir = os.path.join(mconf.games_folder, game_name)
-    for root, dirs, files in os.walk(dir):
-        for f in files:
-            split = os.path.splitext(f)
-            if split[0] == config.thumb['filename'] and split[1] in config.thumb['supported_ext']:
-                info['thumb'] = os.path.normpath(os.path.join(root, f))
+    for f in os.listdir(dir):
+        abs_path = os.path.join(dir, f)
+        if os.path.isfile(abs_path):
+            splat = os.path.splitext(f)
+            if splat[0] == config.thumb['filename'] and splat[1] in config.thumb['supported_ext']:
+                info['thumb'] = os.path.normpath(abs_path)
     if not 'thumb' in info:
         info['thumb'] = config.thumb['default_path']
 
@@ -46,9 +63,10 @@ def load_game_info(game_name):
     return info
 
 game_infos = []
-for root, dirs, files in os.walk(mconf.games_folder):
-    for game_name in sorted(list(dirs)):
-        game_infos.append(load_game_info(game_name))
+dirs = [item for item in os.listdir(mconf.games_folder) if os.path.isdir(os.path.join(mconf.games_folder, item))]
+for game_name in sorted(dirs):
+    print("Game found:"+game_name)
+    game_infos.append(load_game_info(game_name))
 
 import gui
 
