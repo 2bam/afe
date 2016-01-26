@@ -11,7 +11,7 @@ thumb = {
         ,'default_path'     : 'assets/test/example_preview.png'
         }
 
-allowed_html_tags = ['b', 'i', 'sub', 'sup']
+allowed_html_tags = ['b', 'i', 'sub', 'sup', 'br']
 
 info_filename = 'info.xml'
 
@@ -25,6 +25,8 @@ info_defaults = {
 }
 
 app_version = '0.1'
+
+inverval_data_sync = 20
 
 preview_pos = 106, 406
 preview_size = 508, 293

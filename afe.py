@@ -1,5 +1,6 @@
 #import window
 import config
+from config import _
 import machine_config as mconf
 import os
 import xml.etree.ElementTree as ElementTree
@@ -16,10 +17,8 @@ print('''
     *************************************************
     '''.format(app_version=config.app_version, machine=mconf.machine))
 
-try:
-    os.makedirs(mconf.games_folder)
-except:
-    pass
+try: os.makedirs(mconf.games_folder)
+except: pass
 
 def load_game_info(game_name):
     info = {}
@@ -58,7 +57,7 @@ def load_game_info(game_name):
                         else:
                             info[key] += '' or sub.tail
         except:
-            print('Error cargando "' + info_path + '", usando valores estandar')
+            print(_('Error cargando "{path}"').format(path=info_path))
 
     return info
 
@@ -72,9 +71,5 @@ import gui
 
 gui.game_infos = game_infos
 gui.refresh()
-
-#test
-#os.popen(game_infos[0]['execute'])
-
 
 pyglet.app.run()

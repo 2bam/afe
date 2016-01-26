@@ -1,2 +1,12 @@
+###################
+# current version #
+###################
 Python 3.5.1
 pyglet 1.2.4
+
+################
+# next version #
+################
+AVBin 10
+ffmpeg executable (for shrinking/limiting user videos and correcting audioless videos with a silent audio track
+                   otherwise pyglet.media.Player messes up w/race condition and enters an infinite loop)

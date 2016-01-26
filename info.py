@@ -1,9 +1,7 @@
 import shelve
+import sys
 
 data = shelve.open('argentron_shelf')
-#data.clear()
-#data.sync()
-#print("emptied")
 
 for game in sorted(list(data.keys())):
     print(game + ':')

@@ -7,3 +7,5 @@
 [ ] sanitize/make sure execute command calls something inside the game path (without / or .., etc.)
 [ ] make sure if unzipped file isn't just a single nested directory. If so, copy all contents one directory up.
 [ ] not-a-game file to skip directory and use it for tools and stuff? or some sort of redirection for update_folder to go to games_folder or tools_folder or whatev...
+   [ ] and/or also... some xml for game specific config or actions: eg. <uninstall-from>Machine1, Machine2</...>
+[ ] attract mode
